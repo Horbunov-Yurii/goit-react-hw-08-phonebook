@@ -1,36 +1,47 @@
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
-import { getContacts, getFilter } from 'redux/selectors';
-import { fetchContacts, deleteContact } from 'redux/operations';
 import { useEffect } from 'react';
 
-export const ContactsList = () => {
-  const contacts = useSelector(getContacts);
-  const filtered = useSelector(getFilter);
-  const dispatch = useDispatch();
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteContact, fetchContacts } from 'redux/contacts/operations';
+import { selectContacts, selectStatusFilter } from 'redux/selectors';
 
-    useEffect(() => {
-      dispatch(fetchContacts()); 
-    }, [dispatch]);
+import css from './ContactList.module.css';
+
+export const ContactList = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(selectContacts);
+  const filtered = useSelector(selectStatusFilter);
 
   const normalizedFilter = filtered.toLowerCase();
   const filteredContacts = contacts.filter(({ name }) =>
     name.toLowerCase().includes(normalizedFilter)
   );
 
+  useEffect(() => {
+    dispatch(fetchContacts());
+  }, [dispatch]);
+
   return (
-    <ul style={{listStyle:"none"}}>
+    <ul className={css.contactList}>
       {filteredContacts.map(({ id, name, number }) => (
-        <li key={id}>
-          {name} : {number}
-          <button style={{background:"red",marginLeft: 10}} onClick={() => dispatch(deleteContact(id))}>delete</button>
+        <li key={id} className={css.contactItem}>
+          <p className={css.contactText}>
+            {name}: {number}
+          </p>
+          <button
+            className={css.contactListBtn}
+            type="button"
+            onClick={() => dispatch(deleteContact(id))}
+          >
+            Delete
+          </button>
         </li>
       ))}
     </ul>
   );
 };
 
-ContactsList.protoTypes = {
+ContactList.propTypes = {
   contacts: PropTypes.arrayOf(PropTypes.string),
-  onDeleteContact: PropTypes.func.isRequired,
+  onDeleteContact: PropTypes.func,
 };
